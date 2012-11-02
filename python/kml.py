@@ -96,7 +96,7 @@ class output_kml(threading.Thread):
         retstr +=  """\t<Folder>\n\t\t<name>Aircraft locations</name>\n\t\t<open>0</open>"""
 
         #read the database and add KML
-        q = "select distinct icao from positions where seen > datetime('now', '-5 minute')"
+        q = "select distinct icao from positions where seen > datetime('now', '-24 hour')"
         c = self._db.cursor()
         self.locked_execute(c, q)
         icaolist = c.fetchall()

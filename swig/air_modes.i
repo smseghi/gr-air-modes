@@ -5,6 +5,7 @@
 %{
 #include "air_modes_preamble.h"
 #include "air_modes_slicer.h"
+#include "air_modes_sync.h"
 #include <gr_msg_queue.h>
 %}
 
@@ -39,3 +40,12 @@ private:
 
 // ----------------------------------------------------------------
 
+GR_SWIG_BLOCK_MAGIC(air,modes_sync);
+
+air_modes_sync_sptr air_make_modes_sync(float rate, float threshold);
+
+class air_modes_sync : public gr_sync_block
+{
+private:
+  air_modes_sync(float rate, float threshold);
+};

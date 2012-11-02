@@ -25,5 +25,6 @@ install(FILES
     air_modes_slicer.h
     air_modes_types.h
     air_modes_api.h
+    air_modes_sync.h
     DESTINATION include/gr-air-modes
 )

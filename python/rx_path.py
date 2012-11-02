@@ -45,10 +45,11 @@ class rx_path(gr.hier_block2):
             self._bb = self._pmf
 
         # Establish baseline amplitude (noise, interference)
-        self._avg = gr.moving_average_ff(48*self._spc, 1.0/(48*self._spc), self._rate) # 3 preambles
+        self._avg = gr.moving_average_ff(75*self._spc, 1.0/(75*self._spc), self._rate) # First ACF minima
 
         # Synchronize to Mode-S preamble
-        self._sync = air_modes_swig.modes_preamble(self._rate, self._threshold)
+        #self._sync = air_modes_swig.modes_preamble(self._rate, self._threshold)
+        self._sync = air_modes_swig.modes_sync(self._rate, self._threshold)
 
         # Slice Mode-S bits and send to message queue
         self._slicer = air_modes_swig.modes_slicer(self._rate, self._queue)
@@ -58,3 +59,6 @@ class rx_path(gr.hier_block2):
         self.connect(self._bb, (self._sync, 0))
         self.connect(self._bb, self._avg, (self._sync, 1))
         self.connect(self._sync, self._slicer)
+
+        # DEBUG
+        self.connect(self._sync, gr.file_sink(gr.sizeof_float, "sync.dat"))
