@@ -27,13 +27,13 @@
 
 #include <ciso646>
 #include <air_modes_slicer.h>
-#include <gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <air_modes_types.h>
 #include <sstream>
 #include <iomanip>
 #include <modes_crc.h>
 #include <iostream>
-#include <gr_tags.h>
+#include <gnuradio/tags.h>
 
 extern "C"
 {
@@ -41,15 +41,15 @@ extern "C"
 #include <string.h>
 }
 
-air_modes_slicer_sptr air_make_modes_slicer(int channel_rate, gr_msg_queue_sptr queue)
+air_modes_slicer_sptr air_make_modes_slicer(int channel_rate, gr::msg_queue::sptr queue)
 {
 	return air_modes_slicer_sptr (new air_modes_slicer(channel_rate, queue));
 }
 
-air_modes_slicer::air_modes_slicer(int channel_rate, gr_msg_queue_sptr queue) :
-    gr_sync_block ("modes_slicer",
-                   gr_make_io_signature (1, 1, sizeof(float)), //stream 0 is received data, stream 1 is binary preamble detector output
-                   gr_make_io_signature (0, 0, 0) )
+air_modes_slicer::air_modes_slicer(int channel_rate, gr::msg_queue::sptr queue) :
+  gr::sync_block ("modes_slicer",
+		  gr::io_signature::make (1, 1, sizeof(float)), //stream 0 is received data, stream 1 is binary preamble detector output
+                  gr::io_signature::make (0, 0, 0) )
 {
 	//initialize private data here
 	d_chip_rate = 2000000; //2Mchips per second
@@ -107,10 +107,10 @@ int air_modes_slicer::work(int noutput_items,
 
 	if(0) std::cout << "Slicer called with " << size << " samples" << std::endl;
 	
-	std::vector<gr_tag_t> tags;
+	std::vector<gr::tag_t> tags;
 	uint64_t abs_sample_cnt = nitems_read(0);
-	get_tags_in_range(tags, 0, abs_sample_cnt, abs_sample_cnt + size, pmt::pmt_string_to_symbol("preamble_found"));
-	std::vector<gr_tag_t>::iterator tag_iter;
+	get_tags_in_range(tags, 0, abs_sample_cnt, abs_sample_cnt + size, pmt::string_to_symbol("preamble_found"));
+	std::vector<gr::tag_t>::iterator tag_iter;
 
 	for(tag_iter = tags.begin(); tag_iter != tags.end(); tag_iter++) {
 		uint64_t i = tag_iter->offset - abs_sample_cnt;
@@ -158,7 +158,7 @@ int air_modes_slicer::work(int noutput_items,
 		}
 			
 		/******************** BEGIN TIMESTAMP BS ******************/
-		rx_packet.timestamp = pmt_to_double(tag_iter->value);
+		rx_packet.timestamp = pmt::to_double(tag_iter->value);
 		/******************* END TIMESTAMP BS *********************/
 			
 		//increment for the next round
@@ -189,7 +189,7 @@ int air_modes_slicer::work(int noutput_items,
 
 		d_payload << " " << std::setw(6) << rx_packet.crc << " " << std::dec << rx_packet.reference_level
 		          << " " << std::setprecision(10) << std::setw(10) << rx_packet.timestamp;
-			gr_message_sptr msg = gr_make_message_from_string(std::string(d_payload.str()));
+		gr::message::sptr msg = gr::message::make_from_string(std::string(d_payload.str()));
 		d_queue->handle(msg);
 	}
 	if(0) std::cout << "Slicer consumed " << size << ", returned " << size << std::endl;
